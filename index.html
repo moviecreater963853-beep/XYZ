@@ -672,26 +672,29 @@ footer{background:var(--d);padding:6rem 5% 3rem}
       </div>
     </div>
     <div class="cform rv d1">
-      <div class="crow">
-        <div class="cg"><label>First Name</label><input type="text" placeholder="Your name"></div>
-        <div class="cg"><label>Last Name</label><input type="text" placeholder="Last name"></div>
-      </div>
-      <div class="cg"><label>Email Address</label><input type="email" placeholder="your@email.com"></div>
-      <div class="cg"><label>Phone Number</label><input type="tel" placeholder="+91 00000 00000"></div>
-      <div class="cg">
-        <label>Service</label>
-        <select id="svc" onchange="this.classList.toggle('v',this.value!='')">
-          <option value="">Select a service...</option>
-          <option>Wedding Photography</option>
-          <option>Haldi & Mehendi</option>
-          <option>Portrait Session</option>
-          <option>Fashion Editorial</option>
-          <option>Travel & Landscape</option>
-          <option>Commercial & Brand</option>
-        </select>
-      </div>
-      <div class="cg"><label>Your Vision</label><textarea placeholder="Tell me about your story, your dream, your vision..."></textarea></div>
-      <button class="cfbtn" id="cfbtn">Send My Enquiry</button>
+      <form id="contactForm" action="https://formspree.io/f/xlganqrb" method="POST">
+        <input type="hidden" name="_subject" value="New Enquiry — XYZ Photography">
+        <div class="crow">
+          <div class="cg"><label for="fname">First Name</label><input id="fname" type="text" name="first_name" placeholder="Your name" required></div>
+          <div class="cg"><label for="lname">Last Name</label><input id="lname" type="text" name="last_name" placeholder="Last name"></div>
+        </div>
+        <div class="cg"><label for="femail">Email Address</label><input id="femail" type="email" name="email" placeholder="your@email.com" required></div>
+        <div class="cg"><label for="fphone">Phone Number</label><input id="fphone" type="tel" name="phone" placeholder="+91 00000 00000"></div>
+        <div class="cg">
+          <label for="fservice">Service</label>
+          <select id="fservice" name="service" onchange="this.classList.toggle('v',this.value!='')">            <option value="">Select a service...</option>
+            <option>Wedding Photography</option>
+            <option>Haldi & Mehendi</option>
+            <option>Portrait Session</option>
+            <option>Fashion Editorial</option>
+            <option>Travel & Landscape</option>
+            <option>Commercial & Brand</option>
+          </select>
+        </div>
+        <div class="cg"><label for="fmessage">Your Vision</label><textarea id="fmessage" name="message" placeholder="Tell me about your story, your dream, your vision..."></textarea></div>
+        <div id="form-msg" style="display:none;font-size:0.75rem;letter-spacing:1px;padding:0.9rem 1.2rem;margin-bottom:1rem;border-left:3px solid var(--a)"></div>
+        <button class="cfbtn" id="cfbtn" type="submit">Send My Enquiry</button>
+      </form>
     </div>
   </div>
 </section>
@@ -831,11 +834,44 @@ function toggleSvc(header){
 // === TESTIMONIALS ===
 function scrollTest(d){document.getElementById('testScroll').scrollBy({left:d*400,behavior:'smooth'})}
 
-// === FORM ===
-document.getElementById('cfbtn').addEventListener('click',function(){
-  this.textContent='✓ Sent! Expect my reply within 24 hours.'
-  this.style.background='var(--a)'
-  var s=this;setTimeout(function(){s.textContent='Send My Enquiry';s.style.background=''},5000)
+// === FORM — FORMSPREE AJAX ===
+document.getElementById('contactForm').addEventListener('submit',function(e){
+  e.preventDefault()
+  var btn=document.getElementById('cfbtn')
+  var msg=document.getElementById('form-msg')
+  btn.textContent='Sending...'
+  btn.disabled=true
+  btn.style.opacity='0.7'
+  fetch('https://formspree.io/f/xlganqrb',{
+    method:'POST',
+    headers:{'Accept':'application/json'},
+    body:new FormData(this)
+  }).then(function(r){
+    if(r.ok){
+      msg.style.display='block'
+      msg.style.color='var(--k)'
+      msg.style.background='rgba(201,160,110,0.08)'
+      msg.style.borderColor='var(--a)'
+      msg.textContent='✓  Thank you! I\'ll reply within 24 hours.'
+      btn.textContent='Message Sent'
+      btn.style.background='var(--a)'
+      btn.style.opacity='1'
+      document.getElementById('contactForm').reset()
+      document.getElementById('fservice').classList.remove('v')
+    } else {
+      return r.json().then(function(d){throw d})
+    }
+  }).catch(function(err){
+    msg.style.display='block'
+    msg.style.color='#a05050'
+    msg.style.background='rgba(160,80,80,0.06)'
+    msg.style.borderColor='#a05050'
+    msg.textContent='✕  Something went wrong. Please email me directly at hello@xyzphotography.in'
+    btn.textContent='Send My Enquiry'
+    btn.disabled=false
+    btn.style.opacity='1'
+    btn.style.background=''
+  })
 })
 </script>
 </body>
